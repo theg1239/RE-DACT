@@ -63,7 +63,7 @@ To manage project dependencies, create a virtual environment:
 
     If the activation command doesn't work on Windows, you might need to change the execution policy:
 
-    - Run PowerShell as an administrator.
+    - Run PowerShell as an administrator or your IDE shell.
     - Execute the following command:
 
         ```powershell
