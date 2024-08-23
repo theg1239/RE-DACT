@@ -1,12 +1,12 @@
-<!-- templates/index.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Redaction Tool</title>
+    <title>RE-DACT</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
         body {
             font-family: 'Arial', sans-serif;
             background-color: #1a1a1a;
@@ -14,14 +14,36 @@
             margin: 0;
             padding: 0;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
         }
 
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            color: #ff0000;
+            text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000, 0 0 30px #ff0000, 0 0 40px #ff0000;
+            font-size: 2em;
+            margin-bottom: 20px;
+            animation: glitch 1s infinite alternate-reverse;
+        }
+
+        @keyframes glitch {
+            0% {
+                text-shadow: 2px 2px 0 #00ff00, -2px -2px 0 #ff00ff;
+                transform: translate(2px, 2px);
+            }
+            100% {
+                text-shadow: -2px -2px 0 #00ff00, 2px 2px 0 #ff00ff;
+                transform: translate(-2px, -2px);
+            }
+        }
+
         .container {
             width: 90%;
             max-width: 600px;
+            margin-top: 50px; /* Adjusted to move the menu lower */
         }
 
         .circles {
@@ -97,14 +119,24 @@
                 width: 95%;
             }
         }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        label {
+            display: none;
+        }
     </style>
 </head>
 <body>
+    <h1>&lt; RE-DACT &gt;</h1>
     <div class="container">
         <div class="circles">
             <div class="circle" id="menuToggle" title="Input Menu"></div>
             <div class="circle" id="showRedacted" title="Redacted Output"></div>
-            <div class="circle" title="Placeholder"></div>
+            <div class="circle" id="uploadTrigger" title="Upload .txt File"></div>
+            <input type="file" id="fileInput" accept=".txt">
         </div>
         <div class="menu active" id="menu">
             <textarea id="inputText" placeholder="Enter text to redact..."></textarea>
@@ -124,20 +156,27 @@
             const redactedTextContainer = document.getElementById('redactedTextContainer');
             const redactedText = document.getElementById('redactedText');
             const inputText = document.getElementById('inputText');
+            const uploadTrigger = document.getElementById('uploadTrigger');
+            const fileInput = document.getElementById('fileInput');
 
-            // Toggle to show input menu
+            
             menuToggle.addEventListener('click', () => {
                 redactedTextContainer.classList.remove('active');
                 menu.classList.add('active');
             });
 
-            // Toggle to show redacted output
+            
             showRedacted.addEventListener('click', () => {
                 menu.classList.remove('active');
                 redactedTextContainer.classList.add('active');
             });
 
-            // Handle redact button click
+            
+            uploadTrigger.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            
             redactButton.addEventListener('click', () => {
                 const text = inputText.value;
                 if (!text.trim()) return;
@@ -162,6 +201,38 @@
                     console.error('Error:', error);
                     alert('An error occurred during redaction. Please try again.');
                 });
+            });
+
+            // Handle file upload and redaction
+            fileInput.addEventListener('change', () => {
+                const file = fileInput.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const text = e.target.result;
+                    fetch('/redact', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: text })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Server error: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        redactedText.value = data.redacted_text;
+                        menu.classList.remove('active');
+                        redactedTextContainer.classList.add('active');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred during redaction. Please try again.');
+                    });
+                };
+                reader.readAsText(file);
             });
         });
     </script>
