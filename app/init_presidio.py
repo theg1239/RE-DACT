@@ -57,27 +57,31 @@ def generate_fake_entity(entity_type):
 
 def recognize_and_anonymize_entities(text, redaction_level):
     """
-    Recognize and anonymize sensitive entities in the input text based on redaction level.
+    Recognize and anonymize sensitive entities in the input text.
 
     Args:
         text (str): The input text to process.
-        redaction_level (int): The level of redaction (0-100).
+        redaction_level (int): The level of redaction (0 to 100).
 
     Returns:
         str: The text with sensitive entities anonymized and replaced with fake data.
     """
+    # Ensure redaction_level is numeric
+    try:
+        redaction_level = float(redaction_level) / 100.0  # Convert to a fraction if necessary
+    except ValueError:
+        raise ValueError("Redaction level must be a number.")
+
     # Analyze the text to find sensitive entities
     analysis_results = analyzer.analyze(text=text, entities=[], language='en')
 
-    # Determine redaction threshold
-    threshold = redaction_level / 100.0
-
-    # Anonymize each entity with a fake value
+    # Anonymize each entity with a fake value depending on the redaction level
     anonymized_result = text
     for result in analysis_results:
-        # Use redaction level to determine if the entity should be redacted
-        if result.score >= threshold:
-            entity_text = text[result.start:result.end]
+        entity_text = text[result.start:result.end]
+        
+        # Redact based on redaction level
+        if redaction_level >= 0.5:  # Example condition for redaction
             fake_value = generate_fake_entity(result.entity_type)
             anonymized_result = anonymized_result.replace(entity_text, fake_value)
 

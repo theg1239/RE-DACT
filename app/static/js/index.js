@@ -11,11 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const redactionSlider = document.getElementById('redactionSlider');
     const downloadButton = document.getElementById('downloadButton');
 
+    let originalText = "";  // Store the original text here
     let lastRedactedText = "";
 
-    // Initially disable the "Show Redacted" button
     showRedacted.disabled = true;
-    showRedacted.style.opacity = "0.5"; // Make it look disabled
+    showRedacted.style.opacity = "0.5"; 
 
     menuToggle.addEventListener('click', () => {
         redactedTextContainer.classList.remove('active');
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     showRedacted.addEventListener('click', () => {
-        if (!showRedacted.disabled) {  // Only allow click if not disabled
+        if (!showRedacted.disabled) {  
             menu.classList.remove('active');
             redactedTextContainer.classList.add('active');
         }
@@ -31,6 +31,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     uploadTrigger.addEventListener('click', () => {
         fileInput.click();
+    });
+
+    fileInput.addEventListener('change', () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        fetch('/upload', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                originalText = data.original_text; // Store the original text
+                lastRedactedText = originalText;    // Start with original text
+                redactedText.value = lastRedactedText;
+                menu.classList.remove('active');
+                redactedTextContainer.classList.add('active');
+
+                showRedacted.disabled = false;
+                showRedacted.style.opacity = "1"; 
+            }
+        })
+        .catch(error => {
+            console.error('Error during file upload:', error);
+            alert('An error occurred during file upload. Please try again.');
+        });
     });
 
     redactButton.addEventListener('click', () => {
@@ -49,12 +81,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.json();
         })
         .then(data => {
-            lastRedactedText = data.redacted_text;
+            originalText = data.original_text; // Store original text for slider adjustments
+            lastRedactedText = originalText;
             redactedText.value = lastRedactedText;
             menu.classList.remove('active');
             redactedTextContainer.classList.add('active');
 
-            // Enable the "Show Redacted" button once redaction is done
             showRedacted.disabled = false;
             showRedacted.style.opacity = "1"; // Make it look enabled
         })
@@ -65,11 +97,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     redactionSlider.addEventListener('input', () => {
-        if (lastRedactedText) {
+        if (originalText) {
             fetch('/redact', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: inputText.value, redaction_level: redactionSlider.value })
+                body: JSON.stringify({ text: originalText, redaction_level: redactionSlider.value })
             })
             .then(response => {
                 if (!response.ok) {
@@ -78,7 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return response.json();
             })
             .then(data => {
-                redactedText.value = data.redacted_text;
+                lastRedactedText = data.redacted_text;
+                redactedText.value = lastRedactedText;
             })
             .catch(error => {
                 console.error('Error:', error);

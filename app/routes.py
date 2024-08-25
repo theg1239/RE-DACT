@@ -25,60 +25,38 @@ def index():
 
 @app.route('/redact', methods=['POST'])
 def redact_text_route():
-    try:
-        if request.method == 'POST':
-            input_text = request.json.get('text', '')
-            redaction_level = request.json.get('redaction_level', 100)  # Default to 100 if not provided
-
-            if not input_text.strip():
-                log_event("Empty text input received", Fore.RED)
-                return jsonify({"error": "Input text is empty"}), 400
-
-            log_event("Text input received", Fore.YELLOW)
-            start_time = datetime.now()
-
-            redacted_output = recognize_and_anonymize_entities(input_text, redaction_level)
-
+    if request.method == 'POST':
+        input_text = request.json.get('text', '')
+        redaction_level = request.json.get('redaction_level', 100)  # Default to full redaction
+        log_event("Text input received", Fore.YELLOW)
+        start_time = datetime.now()
+        try:
+            redacted_output = recognize_and_anonymize_entities(input_text, redaction_level)  # Pass redaction level
             end_time = datetime.now()
             elapsed_time = (end_time - start_time).total_seconds()
             log_event(f"Redaction complete. ({elapsed_time:.2f}s)", Fore.GREEN)
-
             return jsonify({"redacted_text": redacted_output})
-    except Exception as e:
-        log_event(f"Redaction failed: {str(e)}", Fore.RED)
-        return jsonify({"error": "Redaction failed, please try again later."}), 500
+        except Exception as e:
+            log_event(f"Redaction failed: {str(e)}", Fore.RED)
+            return jsonify({"error": "Redaction failed"}), 500
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    try:
-        if 'file' not in request.files:
-            log_event("File upload attempted without file", Fore.RED)
-            return jsonify({"error": "No file part"}), 400
+    if 'file' not in request.files:
+        log_event("File upload attempted without file", Fore.RED)
+        return jsonify({"error": "No file part"}), 400
 
-        file = request.files['file']
-        redaction_level = request.form.get('redaction_level', 100)  # Default to 100 if not provided
+    file = request.files['file']
+    if file.filename == '':
+        log_event("File upload attempted with no selected file", Fore.RED)
+        return jsonify({"error": "No selected file"}), 400
 
-        if file.filename == '':
-            log_event("File upload attempted with no selected file", Fore.RED)
-            return jsonify({"error": "No selected file"}), 400
+    if file and file.filename.endswith('.txt'):
+        log_event(f"File '{file.filename}' uploaded", Fore.BLUE)
+        content = file.read().decode('utf-8')
+        original_text = content  # Store the original text
+        redacted_output = recognize_and_anonymize_entities(content, redaction_level=100)  # Fully redacted by default
+        return jsonify({"original_text": original_text, "redacted_text": redacted_output})
 
-        if file and file.filename.endswith('.txt'):
-            log_event(f"File '{file.filename}' uploaded", Fore.BLUE)
-            content = file.read().decode('utf-8')
-
-            if not content.strip():
-                log_event("Uploaded file is empty", Fore.RED)
-                return jsonify({"error": "Uploaded file is empty"}), 400
-
-            start_time = datetime.now()
-            redacted_output = recognize_and_anonymize_entities(content, redaction_level)
-            end_time = datetime.now()
-            elapsed_time = (end_time - start_time).total_seconds()
-            log_event(f"Redaction complete for file '{file.filename}'. ({elapsed_time:.2f}s)", Fore.GREEN)
-            return jsonify({"redacted_text": redacted_output})
-
-        log_event("Invalid file format attempted", Fore.RED)
-        return jsonify({"error": "Invalid file format. Please upload a .txt file."}), 400
-    except Exception as e:
-        log_event(f"File redaction failed: {str(e)}", Fore.RED)
-        return jsonify({"error": "File redaction failed, please try again later."}), 500
+    log_event("Invalid file format attempted", Fore.RED)
+    return jsonify({"error": "Invalid file format. Please upload a .txt file."}), 400
