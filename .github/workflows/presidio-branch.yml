@@ -13,7 +13,6 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -32,6 +31,15 @@ jobs:
     - name: Install spaCy model
       run: |
         python -m spacy download en_core_web_sm
+
+    - name: Run black to format code
+      run: |
+        pip install black
+        black .
+
+    - name: Run tests
+      run: |
+        pytest || echo "Tests failed but continuing..."  # Optional
 
     - name: Lint with flake8
       run: |

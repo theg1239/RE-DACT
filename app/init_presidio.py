@@ -8,6 +8,7 @@ anonymizer = AnonymizerEngine()
 # Initialize Faker
 fake = Faker()
 
+
 def generate_fake_entity(entity_type):
     """
     Generate a fake value based on the entity type.
@@ -31,7 +32,7 @@ def generate_fake_entity(entity_type):
     elif entity_type == "IP_ADDRESS":
         return fake.ipv4()
     elif entity_type == "DATE_TIME":
-        return fake.date_time().strftime('%Y-%m-%d %H:%M:%S')
+        return fake.date_time().strftime("%Y-%m-%d %H:%M:%S")
     elif entity_type == "URL":
         return fake.url()
     elif entity_type == "NRP":
@@ -51,6 +52,7 @@ def generate_fake_entity(entity_type):
     # Add more mappings as necessary for other entity types
     return "<REDACTED>"
 
+
 def recognize_and_anonymize_entities(text, redaction_level):
     """
     Recognize and anonymize sensitive entities in the input text.
@@ -64,18 +66,20 @@ def recognize_and_anonymize_entities(text, redaction_level):
     """
     # Ensure redaction_level is numeric
     try:
-        redaction_level = float(redaction_level) / 100.0  # Convert to a fraction if necessary
+        redaction_level = (
+            float(redaction_level) / 100.0
+        )  # Convert to a fraction if necessary
     except ValueError:
         raise ValueError("Redaction level must be a number.")
 
     # Analyze the text to find sensitive entities
-    analysis_results = analyzer.analyze(text=text, entities=[], language='en')
+    analysis_results = analyzer.analyze(text=text, entities=[], language="en")
 
     # Anonymize each entity with a fake value depending on the redaction level
     anonymized_result = text
     for result in analysis_results:
-        entity_text = text[result.start:result.end]
-        
+        entity_text = text[result.start : result.end]
+
         # Redact based on redaction level
         if redaction_level >= 0.5:  # Example condition for redaction
             fake_value = generate_fake_entity(result.entity_type)
