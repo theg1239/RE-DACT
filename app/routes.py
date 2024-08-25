@@ -1,7 +1,5 @@
-# app/routes.py
-
-from flask import current_app as app
 from flask import render_template, request, jsonify
+from app import app
 from .redaction_model import advanced_redact_text
 
 @app.route('/')
