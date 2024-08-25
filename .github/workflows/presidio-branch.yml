@@ -30,6 +30,7 @@ jobs:
     - name: Install spaCy model
       run: |
         python -m spacy download en_core_web_lg
+# flake8: noqa: E501
 
     - name: Lint with flake8
       run: |
