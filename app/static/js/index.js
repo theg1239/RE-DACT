@@ -11,8 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const redactionSlider = document.getElementById('redactionSlider');
     const downloadButton = document.getElementById('downloadButton');
 
-    let originalText = "";  // Store the original text here
     let lastRedactedText = "";
+    let currentFileType = "text"; // Default to text
 
     showRedacted.disabled = true;
     showRedacted.style.opacity = "0.5"; 
@@ -49,14 +49,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.error) {
                 alert(data.error);
             } else {
-                originalText = data.original_text; // Store the original text
-                lastRedactedText = originalText;    // Start with original text
+                lastRedactedText = data.original_text;
                 redactedText.value = lastRedactedText;
                 menu.classList.remove('active');
                 redactedTextContainer.classList.add('active');
 
                 showRedacted.disabled = false;
                 showRedacted.style.opacity = "1"; 
+
+                // Determine the current file type
+                if (file.name.endsWith('.docx')) {
+                    currentFileType = "word";
+                } else if (file.name.endsWith('.xlsx')) {
+                    currentFileType = "excel";
+                } else {
+                    currentFileType = "text";
+                }
             }
         })
         .catch(error => {
@@ -81,14 +89,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.json();
         })
         .then(data => {
-            originalText = data.original_text; // Store original text for slider adjustments
-            lastRedactedText = originalText;
+            lastRedactedText = data.redacted_text;
             redactedText.value = lastRedactedText;
             menu.classList.remove('active');
             redactedTextContainer.classList.add('active');
 
             showRedacted.disabled = false;
-            showRedacted.style.opacity = "1"; // Make it look enabled
+            showRedacted.style.opacity = "1"; 
         })
         .catch(error => {
             console.error('Error:', error);
@@ -97,11 +104,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     redactionSlider.addEventListener('input', () => {
-        if (originalText) {
+        if (lastRedactedText) {
             fetch('/redact', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: originalText, redaction_level: redactionSlider.value })
+                body: JSON.stringify({ text: lastRedactedText, redaction_level: redactionSlider.value })
             })
             .then(response => {
                 if (!response.ok) {
@@ -110,8 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return response.json();
             })
             .then(data => {
-                lastRedactedText = data.redacted_text;
-                redactedText.value = lastRedactedText;
+                redactedText.value = data.redacted_text;
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -121,10 +127,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     downloadButton.addEventListener('click', () => {
-        const blob = new Blob([redactedText.value], { type: 'text/plain' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'redacted_text.txt';
-        link.click();
+        fetch('/download', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ redaction_level: redactionSlider.value })
+        })
+        .then(response => response.blob())
+        .then(blob => {
+            let downloadName = 'redacted_text.txt';
+            if (currentFileType === "word") {
+                downloadName = 'redacted_document.docx';
+            } else if (currentFileType === "excel") {
+                downloadName = 'redacted_document.xlsx';
+            }
+
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = downloadName;
+            link.click();
+        })
+        .catch(error => {
+            console.error('Error during download:', error);
+            alert('An error occurred during file download. Please try again.');
+        });
     });
 });
+
