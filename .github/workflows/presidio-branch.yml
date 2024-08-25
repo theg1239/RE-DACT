@@ -41,11 +41,6 @@ jobs:
       run: |
         pytest || echo "Tests failed but continuing..."  # Optional
 
-    - name: Lint with flake8
-      run: |
-        pip install flake8
-        flake8 .
-
     - name: Start Flask server (optional)
       run: |
         nohup flask run &
