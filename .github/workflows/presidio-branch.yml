@@ -44,7 +44,3 @@ jobs:
     - name: Start Flask server (optional)
       run: |
         nohup flask run &
-
-    - name: Stop Flask server (optional)
-      run: |
-        pkill -f "flask run"  # This stops the Flask server if it was started
