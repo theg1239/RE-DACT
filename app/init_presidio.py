@@ -1,14 +1,10 @@
-# app/init_presidio.py
-
+import random
 from presidio_analyzer import AnalyzerEngine
 from presidio_anonymizer import AnonymizerEngine
-from faker import Faker
-import random
 
-# Initialize Presidio Analyzer and Anonymizer
+# Initialize the engines
 analyzer = AnalyzerEngine()
 anonymizer = AnonymizerEngine()
-
 # Initialize Faker
 fake = Faker()
 

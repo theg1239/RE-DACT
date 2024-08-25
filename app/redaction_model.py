@@ -1,8 +1,5 @@
-from app.init_presidio import analyzer, recognize_entities
-
-# Initialize the analyzer and anonymizer
-analyzer = init_analyzer()
-anonymizer = init_anonymizer()
+from app.init_presidio import analyzer, anonymizer
+from presidio_anonymizer.entities import OperatorConfig
 
 def advanced_redact_text(text):
     # Analyze the text to detect entities

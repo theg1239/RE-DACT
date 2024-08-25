@@ -148,4 +148,3 @@ def download_file():
         buffer = io.StringIO(redacted_text)
         buffer.seek(0)
         return send_file(io.BytesIO(buffer.getvalue().encode()), as_attachment=True, download_name='redacted_text.txt', mimetype='text/plain')
-
