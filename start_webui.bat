@@ -2,10 +2,9 @@
 cls
 title <RE-DACT> - Redaction Tool
 
-:: Function to simulate dynamic typing effect
+
 setlocal enabledelayedexpansion
 
-:: Print the ASCII Art (you can customize this to your liking)
 echo.
 echo "   ___ ________  _______                  ________  ________  ________ _________  ___     "
 echo "   /  /|\   __  \|\  ___ \                |\   ___ \|\   __  \|\   ____\\___   ___\\  \   "
