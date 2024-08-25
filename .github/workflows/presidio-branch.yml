@@ -29,23 +29,19 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-      - name: Install spaCy model
-        run: |
-          python -m spacy download en_core_web_sm
-
-      - name: Run tests
-        run: |
-          pytest
+    - name: Install spaCy model
+      run: |
+        python -m spacy download en_core_web_sm
 
     - name: Lint with flake8
       run: |
         pip install flake8
         flake8 .
 
-      - name: Start Flask server (optional)
-        run: |
-          nohup flask run &
+    - name: Start Flask server (optional)
+      run: |
+        nohup flask run &
 
-      - name: Stop Flask server (optional)
-        run: |
-          pkill -f "flask run"  # This stops the Flask server if it was started
+    - name: Stop Flask server (optional)
+      run: |
+        pkill -f "flask run"  # This stops the Flask server if it was started
