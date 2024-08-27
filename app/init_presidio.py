@@ -1,6 +1,7 @@
 import random
 from presidio_analyzer import AnalyzerEngine
 from presidio_anonymizer import AnonymizerEngine
+from faker import Faker
 
 # Initialize the engines
 analyzer = AnalyzerEngine()
