@@ -16,15 +16,6 @@ python:
   install:
     - requirements: requirements.txt  # Updated to reflect the root directory
 
-vcs:
-  type: git
-  repo: https://github.com/SIH-VIT-24/RE-DACT.git
-  clone:
-    depth: 1
-    shallow_since: 2023-01-01
-  submodules: false
-  version: presidio
-
 formats:
   - pdf
   - epub
