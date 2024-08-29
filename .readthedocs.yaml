@@ -15,9 +15,6 @@ sphinx:
 python:
   install:
     - requirements: requirements.txt  # Updated to reflect the root directory
-    - method: pip
-      path: .
-    - path: .
 
 # Optionally, build PDF and EPUB versions of your documentation
 formats:
