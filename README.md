@@ -86,3 +86,4 @@ To run the application locally, use the following command:
 
     flask run
 
+And then open localhost:5000 on your web browser.
